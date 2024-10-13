@@ -51,7 +51,7 @@ namespace matlib {
 	class mat3 {
 	private:
 		vec3 a, b, c;
-		void sort();
+		void sort(int rang);
 	public:
 		mat3(double value = 0.0) : a(value, 0.0, 0.0), b(0.0, value, 0.0), c(0.0, 0.0, value) {}
 		mat3(vec3& a, vec3& b, vec3& c) : a(a), b(b), c(c) {}
@@ -61,4 +61,5 @@ namespace matlib {
 	};
 
 	void EvalCoef(Array& x, Array& y, matlib::mat3& A, matlib::vec3& b);
+	void Solve_SLAE(mat3& A, vec3& b, vec3& c);
 }
