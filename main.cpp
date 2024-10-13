@@ -38,8 +38,10 @@ int main() {
 
 	matlib::mat3 A;
 	matlib::vec3 b, c;
+	
+	matlib::EvalCoef(x, y, A, b);
 
-
+	matlib::Solve_SLAE(A, b, c);
 
 	return 0;
 }
