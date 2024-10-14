@@ -29,9 +29,21 @@ void matlib::mat3::transpose() {
 	std::swap(b.z, c.y);
 }
 void matlib::mat3::sort(int rang) {
+	this->transpose();
 	if (rang == 3) {
-
+		if (b.x > a.x && b.x > c.x) {
+			std::swap(a, b);
+		}
+		else if (c.x > a.x && c.x > b.x) {
+			std::swap(a, c);
+		}
 	}
+	else if (rang == 2) {
+		if (c.y > b.y) {
+			std::swap(b, c);
+		}
+	}
+	this->transpose();
 }
 matlib::mat3& matlib::mat3::operator+=(mat3& m) {
 	a += m.a;
@@ -41,6 +53,13 @@ matlib::mat3& matlib::mat3::operator+=(mat3& m) {
 }
 
 // Math library functions -----------------------------------------------------
+matlib::vec3 matlib::operator*(matlib::vec3& vector, double value) {
+	matlib::vec3 tmp(vector.x * value, vector.y * value, vector.z * value);
+	return tmp;
+}
+matlib::vec3 matlib::operator*(double value, matlib::vec3& vector) {
+	return vec3(vector*value);
+}
 void matlib::EvalCoef(Array& x, Array& y, mat3& A, vec3& b) {
 	vec3 v1, v2, v3;
 	for (int i = 0; i < x.size(); ++i) {
@@ -59,5 +78,9 @@ void matlib::EvalCoef(Array& x, Array& y, mat3& A, vec3& b) {
 	A += tmp;
 }
 void matlib::Solve_SLAE(mat3& A, vec3& b, vec3& c) {
+	A.sort(3);
+	double q = A.a21 / A.a11;
+	A.transpose();
+
 
 }
