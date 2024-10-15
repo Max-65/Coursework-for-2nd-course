@@ -1,31 +1,6 @@
 #include <iostream>
 #include "matlib.h"
 
-//class Array {
-//private:
-//	int size;
-//	double* arr;
-//public:
-//	Array(int size = 0, double allocator = 0.0) : size(size) {
-//		arr = new double[this->size];
-//		for (int i = 0; i < this->size; ++i) {
-//			arr[i] = allocator;
-//		}
-//	}
-//	~Array() {
-//		delete[] arr;
-//		arr = nullptr;
-//	}
-//	double& operator[](int i) const {
-//		return arr[i];
-//	}
-//	void input() const {
-//		for (int i = 0; i < size; ++i) {
-//			std::cin >> arr[i];
-//		}
-//	}
-//};
-
 int const n = 6, m = 3;
 
 int main() {
@@ -37,11 +12,18 @@ int main() {
 	y.input();
 
 	matlib::mat3 A;
-	matlib::vec3 b, c;
+	matlib::vec3 b, c(0, 1, 2);
 	
 	matlib::EvalCoef(x, y, A, b);
 
 	matlib::Solve_SLAE(A, b, c);
 
+	std::cout << '\n' << c.x << ' ' << c.y << ' ' << c.z << '\n';
 	return 0;
 }
+
+/*
+1.1 2.1 3.1 4.1 5.1 6.1
+0.1 0.4 0.9 1.6 2.5 3.6
+
+*/
