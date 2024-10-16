@@ -43,23 +43,6 @@ void matlib::vec3::reverse() {
 }
 
 // Matrix 3x3 class
-void matlib::mat3::transpose() {
-	std::swap(a21, a12);
-	std::swap(a31, a13);
-	std::swap(a32, a23);
-}
-void matlib::mat3::reverse() {
-	transpose();
-	std::swap(a21, a32);
-	std::swap(a11, a33);
-	std::swap(a12, a23);
-}
-
-void matlib::mat3::print() const {
-	std::cout << '\n' << a11 << ' ' << a12 << ' ' << a13 << '\n';
-	std::cout << a21 << ' ' << a22 << ' ' << a23 << '\n';
-	std::cout << a31 << ' ' << a32 << ' ' << a33 << '\n';
-}
 matlib::mat3& matlib::mat3::operator=(mat3 const& m) {
 	if (this != &m) {
 		a = m.a;
@@ -86,30 +69,16 @@ matlib::mat3& matlib::mat3::operator-=(mat3 const& m) {
 	*this += -m;
 	return *this;
 }
-
-// Math library functions
-matlib::vec3 matlib::operator*(vec3 const& vector, double value) {
-	return vec3(vector.x * value, vector.y * value, vector.z * value);
+void matlib::mat3::transpose() {
+	std::swap(a21, a12);
+	std::swap(a31, a13);
+	std::swap(a32, a23);
 }
-void matlib::EvalCoef(Array& x, Array& y, mat3& A, vec3& b) {
-	vec3 v1, v2, v3;
-	for (int i = 0; i < x.size(); ++i) {
-		v1.x += 1;
-		v2.x += x[i];
-		v2.y += x[i] * x[i];
-		v3.x += std::exp(-x[i]);
-		v3.y += std::exp(-x[i]) * x[i];
-		v3.z += std::exp(-x[i] * 2);
-
-		b.x += y[i];
-		b.y += y[i] * x[i];
-		b.z += y[i] * std::exp(-x[i]);
-	}
-	v1.y = v2.x;
-	v1.z = v3.x;
-	v2.z = v3.y;
-
-	A = mat3(v1, v2, v3);
+void matlib::mat3::reverse() {
+	transpose();
+	std::swap(a21, a32);
+	std::swap(a11, a33);
+	std::swap(a12, a23);
 }
 void matlib::mat3::sort(vec3& v, int rang) {
 	transpose();
@@ -145,7 +114,51 @@ void matlib::mat3::sort(vec3& v, int rang) {
 	}
 	transpose();
 }
-void matlib::Solve_SLAE(mat3& A, vec3& b, vec3& c) {
+
+
+// Math library functions
+matlib::vec3 matlib::operator*(vec3 const& vector, double value) {
+	return vec3(vector.x * value, vector.y * value, vector.z * value);
+}
+std::istream& matlib::operator>>(std::istream& is, Array& arr) {
+	for (int i = 0; i < arr.size(); ++i) {
+		std::cin >> arr[i];
+	}
+	return is;
+}
+std::ostream& matlib::operator<<(std::ostream& os, Array const& arr) {
+	for (int i = 0; i < arr.size(); ++i) {
+		std::cout << arr[i] << ' ';
+	}
+	return os;
+}
+std::ostream& matlib::operator<<(std::ostream& os, mat3 const& m) {
+	std::cout << m.a11 << ' ' << m.a12 << ' ' << m.a13 << '\n';
+	std::cout << m.a21 << ' ' << m.a22 << ' ' << m.a23 << '\n';
+	std::cout << m.a31 << ' ' << m.a32 << ' ' << m.a33;
+	return os;
+}
+void matlib::EvalCoef(Array const& x, Array const& y, mat3& A, vec3& b) {
+	vec3 v1, v2, v3;
+	for (int i = 0; i < x.size(); ++i) {
+		v1.x += 1;
+		v2.x += x[i];
+		v2.y += x[i] * x[i];
+		v3.x += std::exp(-x[i]);
+		v3.y += std::exp(-x[i]) * x[i];
+		v3.z += std::exp(-x[i] * 2);
+
+		b.x += y[i];
+		b.y += y[i] * x[i];
+		b.z += y[i] * std::exp(-x[i]);
+	}
+	v1.y = v2.x;
+	v1.z = v3.x;
+	v2.z = v3.y;
+
+	A = mat3(v1, v2, v3);
+}
+void matlib::SolveSLAE(mat3& A, vec3& b, vec3& c) {
 	int flag = 2;
 	// flag == 2 -> Direct bypass
 	// flag == 1 -> Reverse bypass
@@ -172,6 +185,21 @@ void matlib::Solve_SLAE(mat3& A, vec3& b, vec3& c) {
 		A.reverse();
 		b.reverse();
 	}
-
 	c = vec3(b.x / A.a11, b.y / A.a22, b.z / A.a33);
+}
+void matlib::Approx(vec3 const& c, Array const& x, Array& y) {
+	for (int i = 0; i < x.size(); ++i) {
+		y[i] = c.x + c.y * x[i] + c.z * std::exp(-x[i]);
+	}
+}
+void matlib::ApproxQuality(Array const& y, Array const& y1, Array& d, double& max_d, int& max_d_i, double& approx_crit) {
+	for (int i = 0; i < y.size(); ++i) {
+		d[i] = abs(y[i] - y1[i]);
+
+		if (d[i] > max_d) {
+			max_d = d[i];
+			max_d_i = i;
+		}
+		approx_crit += d[i] * d[i];
+	}
 }
