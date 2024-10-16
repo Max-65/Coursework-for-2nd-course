@@ -19,6 +19,8 @@ namespace matlib {
 		double& operator[](int i) const;
 		void input();
 		int size() const;
+		friend std::istream& operator>>(std::istream& is, Array& arr);
+		friend std::ostream& operator<<(std::ostream& os, Array const& arr);
 	};
 /*
 	vector x3:
@@ -88,10 +90,12 @@ namespace matlib {
 		void transpose();
 		void reverse();
 		void sort(vec3& v, int rang);
-		void print() const;
+		friend std::ostream& operator<<(std::ostream& os, mat3 const& m);
 	};
 
 	vec3 operator*(vec3 const& vector, double value);
-	void EvalCoef(Array& x, Array& y, mat3& A, vec3& b);
-	void Solve_SLAE(mat3& A, vec3& b, vec3& c);
+	void EvalCoef(Array const& x, Array const& y, mat3& A, vec3& b);
+	void SolveSLAE(mat3& A, vec3& b, vec3& c);
+	void Approx(vec3 const& c, Array const& x, Array& y);
+	void ApproxQuality(Array const& y, Array const& y1, Array& d, double& max_d, int& max_d_i, double& approx_crit);
 }
