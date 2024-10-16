@@ -2,7 +2,7 @@
 #include "matlib.h"
 
 // Array class
-double& matlib::Array::operator[](int i) const {
+double& matlib::Array::operator[](int const& i) const {
 	return arr[i];
 }
 int matlib::Array::size() const {
@@ -17,6 +17,28 @@ matlib::vec3& matlib::vec3::operator=(vec3 const& v) {
 		z = v.z;
 	}
 	return *this;
+}
+double& matlib::vec3::operator[](int const& i) {
+	switch (i) {
+	case 0:
+		return x;
+	case 1:
+		return y;
+	case 2:
+		return z;
+	}
+	exit(3);
+}
+double const& matlib::vec3::operator[](int const& i) const {
+	switch (i) {
+	case 0:
+		return x;
+	case 1:
+		return y;
+	case 2:
+		return z;
+	}
+	exit(3);
 }
 matlib::vec3 matlib::vec3::operator+() const {
 	return vec3(x, y, z);
@@ -33,8 +55,13 @@ matlib::vec3& matlib::vec3::operator+=(vec3 const& v) {
 matlib::vec3& matlib::vec3::operator-=(vec3 const& v) {
 	return *this += -v;
 }
+int matlib::vec3::size() const {
+	return size_;
+}
 void matlib::vec3::reverse() {
-	std::swap(x, z);
+	for (int i = 0; i < size() / 2; ++i) {
+		std::swap((*this)[i], (*this)[size() - i - 1]);
+	}
 }
 
 // Matrix 3x3 class
@@ -45,6 +72,28 @@ matlib::mat3& matlib::mat3::operator=(mat3 const& m) {
 		c = m.c;
 	}
 	return *this;
+}
+matlib::vec3& matlib::mat3::operator[](int const& i) {
+	switch (i) {
+	case 0:
+		return a;
+	case 1:
+		return b;
+	case 2:
+		return c;
+	}
+	exit(3);
+}
+matlib::vec3 const& matlib::mat3::operator[](int const& i) const {
+	switch (i) {
+	case 0:
+		return a;
+	case 1:
+		return b;
+	case 2:
+		return c;
+	}
+	exit(3);
 }
 matlib::mat3 matlib::mat3::operator+() const {
 	mat3 m(a, b, c);
@@ -64,52 +113,57 @@ matlib::mat3& matlib::mat3::operator-=(mat3 const& m) {
 	*this += -m;
 	return *this;
 }
+int matlib::mat3::size() const {
+	return size_;
+}
 void matlib::mat3::transpose() {
-	std::swap(a21, a12);
-	std::swap(a31, a13);
-	std::swap(a32, a23);
+	for (int i = 0; i < size() - 1; ++i) {
+		for (int j = i + 1; j < size(); ++j) {
+			std::swap((*this)[i][j], (*this)[j][i]);
+		}
+	}
 }
 void matlib::mat3::reverse() {
 	transpose();
-	std::swap(a21, a32);
-	std::swap(a11, a33);
-	std::swap(a12, a23);
-}
-void matlib::mat3::sort(vec3& v, int rang) {
-	transpose();
-	if (rang == 3) {
-		if (abs(b.x) > abs(a.x) && abs(b.x) > abs(c.x)) {
-			std::swap(a, b);
-			std::swap(v.x, v.y);
-		}
-		else if (abs(c.x) > abs(a.x) && abs(c.x) > abs(b.x)) {
-			std::swap(a, c);
-			std::swap(v.x, v.z);
+	for (int i = 0; i < size() - 1; ++i) {
+		for (int j = 0; j < size() - i - 1; ++j) {
+			std::swap((*this)[i][j], (*this)[size() - j - 1][size() - i - 1]);
 		}
 	}
-	else if (rang == 2) {
-		if (abs(c.y) > abs(b.y)) {
-			std::swap(b, c);
-			std::swap(v.y, v.z);
+}
+void matlib::mat3::swapMaxEquation(vec3& v, int rang) {
+	transpose();
+	int mx_i(size() - rang), beg_i(size() - rang);
+	double mx(abs((*this)[beg_i][beg_i]));
+	
+	for (int i = beg_i + 1; i < size(); ++i) {
+		if (abs((*this)[i][beg_i]) > mx) {
+			mx = abs((*this)[i][beg_i]);
+			mx_i = i;
 		}
+	}
+	if (mx_i != beg_i) {
+		std::swap((*this)[beg_i], (*this)[mx_i]);
+		std::swap(v[beg_i], v[mx_i]);
 	}
 	transpose();
 }
 
 // Math library functions
-double matlib::f1(double const& xi) {
-	return 1;
-}
-double matlib::f2(double const& xi) {
-	return xi;
-}
-double matlib::f3(double const& xi) {
-	return std::exp(-xi);
+double matlib::f(int const& i, double const& xi) {
+	switch (i) {
+	case 0:
+		return 1;
+	case 1:
+		return xi;
+	case 2:
+		return std::exp(-xi);
+	}
+	exit(3);
 }
 matlib::vec3 matlib::operator*(vec3 const& vector, double value) {
 	return vec3(vector.x * value, vector.y * value, vector.z * value);
 }
-
 std::istream& matlib::operator>>(std::istream& is, Array& arr) {
 	for (int i = 0; i < arr.size(); ++i) {
 		std::cin >> arr[i];
@@ -123,62 +177,58 @@ std::ostream& matlib::operator<<(std::ostream& os, Array const& arr) {
 	return os;
 }
 std::ostream& matlib::operator<<(std::ostream& os, mat3 const& m) {
-	std::cout << m.a11 << ' ' << m.a12 << ' ' << m.a13 << '\n';
-	std::cout << m.a21 << ' ' << m.a22 << ' ' << m.a23 << '\n';
-	std::cout << m.a31 << ' ' << m.a32 << ' ' << m.a33;
+	std::cout << m[0][0] << ' ' << m[1][0] << ' ' << m[2][0] << '\n';
+	std::cout << m[0][1] << ' ' << m[1][1] << ' ' << m[2][1] << '\n';
+	std::cout << m[0][2] << ' ' << m[1][2] << ' ' << m[2][2];
 	return os;
 }
 void matlib::EvalCoef(Array const& x, Array const& y, mat3& A, vec3& b) {
 	for (int i = 0; i < x.size(); ++i) {
-		A.a11 += f1(x[i]) * f1(x[i]);
-		A.a12 += f1(x[i]) * f2(x[i]);
-		A.a13 += f1(x[i]) * f3(x[i]);
-
-		A.a21 += f2(x[i]) * f1(x[i]);
-		A.a22 += f2(x[i]) * f2(x[i]);
-		A.a23 += f2(x[i]) * f3(x[i]);
-
-		A.a31 += f3(x[i]) * f1(x[i]);
-		A.a32 += f3(x[i]) * f2(x[i]);
-		A.a33 += f3(x[i]) * f3(x[i]);
-
-		b.x += y[i];
-		b.y += y[i] * x[i];
-		b.z += y[i] * std::exp(-x[i]);
+		for (int k = 0; k < A.size(); ++k) {
+			for (int l = 0; l < A.size(); ++l) {
+				A[k][l] += f(k, x[i]) * f(l, x[i]);
+			}
+			b[k] += y[i] * f(k, x[i]);
+		}
 	}
 }
 void matlib::SolveSLAE(mat3& A, vec3& b, vec3& c) {
-	int flag = 2;
+	int flag(2), mx_i(0);
+	Array q(A.size() - 1);
+	vec3 v;
 	// flag == 2 -> Direct bypass
 	// flag == 1 -> Reverse bypass
 	// flag == 0 -> Break
 	
 	while (flag--) {
-		if(flag) A.sort(b, 3);
-		A.transpose();
-		double q1(A.a12 / A.a11), q2(A.a13 / A.a11);
-		vec3 v(A.a11, A.a21, A.a31);
-		A -= mat3(0.0, v * q1, v * q2);
-		b -= vec3(0.0, b.x * q1, b.x * q2);
+		for (int r = A.size(); r > 1; --r) {
+			mx_i = A.size() - r;
+			if (flag) A.swapMaxEquation(b, r);
 
-		A.transpose();
-		if(flag) A.sort(b, 2);
-		A.transpose();
+			for (int i = 0; i < A.size() - 1; ++i) {
+				q[i] = A[mx_i][i + 1] / A[mx_i][mx_i];
+			}
 
-		v = vec3(A.a12, A.a22, A.a32);
-		q1 = A.a23 / A.a22;
-		A -= mat3(0.0, 0.0, v * q1);
-		b -= vec3(0.0, 0.0, b.y * q1);
-
-		A.transpose();
+			A.transpose();
+			v = A[mx_i];
+			for (int i = mx_i + 1; i < A.size(); ++i) {
+				A[i] -= v * q[i - 1];
+				b[i] -= b[mx_i] * q[i - 1];
+			}
+			A.transpose();
+		}
 		A.reverse();
 		b.reverse();
 	}
-	c = vec3(b.x / A.a11, b.y / A.a22, b.z / A.a33);
+	for (int i = 0; i < A.size(); ++i) {
+		c[i] = b[i] / A[i][i];
+	}
 }
 void matlib::Approx(vec3 const& c, Array const& x, Array& y) {
 	for (int i = 0; i < x.size(); ++i) {
-		y[i] = c.x + c.y * x[i] + c.z * std::exp(-x[i]);
+		for (int k = 0; k < c.size(); ++k) {
+			y[i] += c[k] * f(k, x[i]);
+		}
 	}
 }
 void matlib::ApproxQuality(Array const& y, Array const& y1, Array& d, double& max_d, int& max_d_i, double& approx_crit) {
