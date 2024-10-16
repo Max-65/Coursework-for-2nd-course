@@ -17,7 +17,6 @@ namespace matlib {
 			arr = nullptr;
 		}
 		double& operator[](int i) const;
-		void input();
 		int size() const;
 		friend std::istream& operator>>(std::istream& is, Array& arr);
 		friend std::ostream& operator<<(std::ostream& os, Array const& arr);
@@ -93,6 +92,9 @@ namespace matlib {
 		friend std::ostream& operator<<(std::ostream& os, mat3 const& m);
 	};
 
+	double f1(double const& xi);
+	double f2(double const& xi);
+	double f3(double const& xi);
 	vec3 operator*(vec3 const& vector, double value);
 	void EvalCoef(Array const& x, Array const& y, mat3& A, vec3& b);
 	void SolveSLAE(mat3& A, vec3& b, vec3& c);
