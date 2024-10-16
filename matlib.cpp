@@ -5,11 +5,6 @@
 double& matlib::Array::operator[](int i) const {
 	return arr[i];
 }
-void matlib::Array::input() {
-	for (int i = 0; i < size_; ++i) {
-		std::cin >> arr[i];
-	}
-}
 int matlib::Array::size() const {
 	return size_;
 }
@@ -83,31 +78,17 @@ void matlib::mat3::reverse() {
 void matlib::mat3::sort(vec3& v, int rang) {
 	transpose();
 	if (rang == 3) {
-		if (b.x > a.x && b.x > c.x) {
+		if (abs(b.x) > abs(a.x) && abs(b.x) > abs(c.x)) {
 			std::swap(a, b);
 			std::swap(v.x, v.y);
 		}
-		else if (c.x > a.x && c.x > b.x) {
+		else if (abs(c.x) > abs(a.x) && abs(c.x) > abs(b.x)) {
 			std::swap(a, c);
 			std::swap(v.x, v.z);
 		}
 	}
 	else if (rang == 2) {
-		if (c.y > b.y) {
-			std::swap(b, c);
-			std::swap(v.y, v.z);
-		}
-	}
-	else if (rang == 1) {
-		if (b.x != 0) {
-			std::swap(a, b);
-			std::swap(v.x, v.y);
-		}
-		else if (c.x != 0) {
-			std::swap(a, c);
-			std::swap(v.x, v.z);
-		}
-		else if (c.y != 0) {
+		if (abs(c.y) > abs(b.y)) {
 			std::swap(b, c);
 			std::swap(v.y, v.z);
 		}
@@ -115,11 +96,20 @@ void matlib::mat3::sort(vec3& v, int rang) {
 	transpose();
 }
 
-
 // Math library functions
+double matlib::f1(double const& xi) {
+	return 1;
+}
+double matlib::f2(double const& xi) {
+	return xi;
+}
+double matlib::f3(double const& xi) {
+	return std::exp(-xi);
+}
 matlib::vec3 matlib::operator*(vec3 const& vector, double value) {
 	return vec3(vector.x * value, vector.y * value, vector.z * value);
 }
+
 std::istream& matlib::operator>>(std::istream& is, Array& arr) {
 	for (int i = 0; i < arr.size(); ++i) {
 		std::cin >> arr[i];
@@ -139,24 +129,23 @@ std::ostream& matlib::operator<<(std::ostream& os, mat3 const& m) {
 	return os;
 }
 void matlib::EvalCoef(Array const& x, Array const& y, mat3& A, vec3& b) {
-	vec3 v1, v2, v3;
 	for (int i = 0; i < x.size(); ++i) {
-		v1.x += 1;
-		v2.x += x[i];
-		v2.y += x[i] * x[i];
-		v3.x += std::exp(-x[i]);
-		v3.y += std::exp(-x[i]) * x[i];
-		v3.z += std::exp(-x[i] * 2);
+		A.a11 += f1(x[i]) * f1(x[i]);
+		A.a12 += f1(x[i]) * f2(x[i]);
+		A.a13 += f1(x[i]) * f3(x[i]);
+
+		A.a21 += f2(x[i]) * f1(x[i]);
+		A.a22 += f2(x[i]) * f2(x[i]);
+		A.a23 += f2(x[i]) * f3(x[i]);
+
+		A.a31 += f3(x[i]) * f1(x[i]);
+		A.a32 += f3(x[i]) * f2(x[i]);
+		A.a33 += f3(x[i]) * f3(x[i]);
 
 		b.x += y[i];
 		b.y += y[i] * x[i];
 		b.z += y[i] * std::exp(-x[i]);
 	}
-	v1.y = v2.x;
-	v1.z = v3.x;
-	v2.z = v3.y;
-
-	A = mat3(v1, v2, v3);
 }
 void matlib::SolveSLAE(mat3& A, vec3& b, vec3& c) {
 	int flag = 2;
